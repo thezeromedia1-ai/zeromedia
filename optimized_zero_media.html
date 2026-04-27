@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zero Media | High Conversion Ads</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,800;0,900;1,400;1,700;1,800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ─── BASE STYLES ─── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: "DM Sans", sans-serif;
+      background: #faf6f0;
+      color: #1a1a1a;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ─── ANIMATIONS ─── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s cubic-bezier(.22,.68,0,1), transform 0.8s cubic-bezier(.22,.68,0,1);
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal.delay-1 { transition-delay: 0.1s; }
+    .reveal.delay-2 { transition-delay: 0.2s; }
+    .reveal.delay-3 { transition-delay: 0.3s; }
+    .reveal.delay-4 { transition-delay: 0.4s; }
+
+    /* ─── NAVIGATION ─── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      background: rgba(250,246,240,0.8);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      padding: 15px 0;
+    }
+    nav .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #1a1a1a;
+      text-decoration: none;
+    }
+    .nav-links {
+      display: none;
+      gap: 30px;
+    }
+    .nav-links a {
+      text-decoration: none;
+      color: #1a1a1a;
+      font-weight: 500;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      transition: color 0.3s;
+    }
+    .nav-links a:hover { color: #e8a84a; }
+    .hamburger {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      cursor: pointer;
+    }
+    .hamburger span {
+      width: 25px;
+      height: 2px;
+      background: #1a1a1a;
+      transition: 0.3s;
+    }
+
+    /* ─── HERO SECTION ─── */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding-top: 80px;
+      background: #faf6f0;
+      overflow: hidden;
+    }
+    .hero-content {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+    }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 40px;
+      align-items: center;
+    }
+    .hero-text { max-width: 600px; }
+    .headline {
+      font-family: "Playfair Display", serif;
+      font-weight: 700;
+      font-size: clamp(40px, 8vw, 72px);
+      line-height: 1.1;
+      margin-bottom: 24px;
+    }
+    .headline em { font-style: italic; font-weight: 400; }
+    .hero-description {
+      font-size: 18px;
+      color: #444;
+      margin-bottom: 32px;
+      max-width: 480px;
+    }
+    .hero-btns {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-block;
+      padding: 16px 32px;
+      border-radius: 50px;
+      font-weight: 700;
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: 13px;
+      transition: all 0.3s;
+    }
+    .btn-primary {
+      background: #1a1a1a;
+      color: #fff;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    .btn-primary:hover {
+      background: #e8a84a;
+      color: #1a1a1a;
+      transform: translateY(-3px);
+      box-shadow: 0 15px 35px rgba(232,168,74,0.3);
+    }
+    .hero-visual {
+      position: relative;
+      height: 400px;
+    }
+    .hero-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 24px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+    }
+    .stat-badge {
+      position: absolute;
+      bottom: -20px;
+      right: -20px;
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(255,255,255,0.3);
+      padding: 20px;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+      animation: float 4s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+    .stat-number {
+      font-family: "Playfair Display", serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: #1a1a1a;
+    }
+    .stat-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #666;
+    }
+
+    /* ─── SERVICES SECTION ─── */
+    .services { padding: 100px 0; background: #fff; }
+    .section-header {
+      text-align: center;
+      margin-bottom: 60px;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .section-tag {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: #e8a84a;
+      font-weight: 700;
+      margin-bottom: 10px;
+      display: block;
+    }
+    .section-title {
+      font-family: "Playfair Display", serif;
+      font-size: clamp(32px, 5vw, 48px);
+      line-height: 1.2;
+    }
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 30px;
+    }
+    .service-card {
+      padding: 40px;
+      background: #faf6f0;
+      border-radius: 24px;
+      transition: all 0.3s;
+      border: 1px solid transparent;
+    }
+    .service-card:hover {
+      background: #fff;
+      border-color: #e8a84a;
+      transform: translateY(-10px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+    }
+    .service-icon {
+      font-size: 32px;
+      margin-bottom: 20px;
+      display: inline-block;
+    }
+    .service-name {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 15px;
+    }
+    .service-desc {
+      color: #666;
+      font-size: 15px;
+    }
+
+    /* ─── CTA SECTION ─── */
+    .cta {
+      padding: 100px 0;
+      background: #1a1a1a;
+      color: #fff;
+      text-align: center;
+    }
+    .cta-content { max-width: 800px; margin: 0 auto; }
+    .cta-title {
+      font-family: "Playfair Display", serif;
+      font-size: clamp(36px, 6vw, 56px);
+      margin-bottom: 24px;
+    }
+    .cta-sub {
+      font-size: 18px;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 40px;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      padding: 60px 0;
+      background: #faf6f0;
+      border-top: 1px solid rgba(0,0,0,0.05);
+      text-align: center;
+    }
+    .footer-logo {
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      display: block;
+    }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+    .footer-links a {
+      text-decoration: none;
+      color: #666;
+      font-size: 14px;
+      transition: color 0.3s;
+    }
+    .footer-links a:hover { color: #1a1a1a; }
+    .copyright {
+      font-size: 12px;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    /* ─── RESPONSIVE BREAKPOINTS ─── */
+    @media (min-width: 768px) {
+      .nav-links { display: flex; }
+      .hamburger { display: none; }
+      .hero-grid { grid-template-columns: 1.2fr 0.8fr; gap: 60px; }
+      .hero-visual { height: 500px; }
+      .hero-text { text-align: left; }
+      .hero-btns { justify-content: flex-start; }
+    }
+
+    @media (max-width: 767px) {
+      .hero { text-align: center; padding-top: 100px; }
+      .hero-btns { justify-content: center; }
+      .hero-description { margin-left: auto; margin-right: auto; }
+      .hero-visual { margin-top: 40px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVIGATION -->
+  <nav>
+    <div class="container">
+      <a href="#" class="logo">Zero Media</a>
+      <div class="nav-links">
+        <a href="#services">Services</a>
+        <a href="#case-studies">Case Studies</a>
+        <a href="#process">Process</a>
+        <a href="#about">About Us</a>
+      </div>
+      <a href="https://calendar.app.google/mPDTCMvqw9cnvbiP6" class="btn btn-primary" style="padding: 10px 20px; font-size: 11px; display: none;" id="nav-cta">Get an Audit</a>
+      <div class="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-grid">
+        <div class="hero-text">
+          <h1 class="headline reveal">
+            Wasting Budget <br>
+            on Unqualified <br>
+            <em>Leads.</em>
+          </h1>
+          <p class="hero-description reveal delay-1">
+            Accelerate your growth using our AI-optimized Meta and Google Ads. Supported and tested by experts for maximum results.
+          </p>
+          <div class="hero-btns reveal delay-2">
+            <a href="https://calendar.app.google/mPDTCMvqw9cnvbiP6" class="btn btn-primary">Book a Free Strategy Audit</a>
+          </div>
+        </div>
+        <div class="hero-visual reveal delay-3">
+          <img src="https://i.ibb.co/FkRhRYWN/1000297312.jpg" alt="Zero Media Success" class="hero-img">
+          <div class="stat-badge">
+            <div class="stat-number">1021+</div>
+            <div class="stat-label">High Conversion Leads</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES SECTION -->
+  <section class="services" id="services">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">Our Expertise</span>
+        <h2 class="section-title">AI-Powered Solutions for <em>Modern Brands</em></h2>
+      </div>
+      <div class="services-grid">
+        <div class="service-card reveal">
+          <div class="service-icon">🎯</div>
+          <h3 class="service-name">Meta & Google Ads</h3>
+          <p class="service-desc">Strategic campaign management focused on high-intent audiences and conversion optimization.</p>
+        </div>
+        <div class="service-card reveal delay-1">
+          <div class="service-icon">🤖</div>
+          <h3 class="service-name">AI Implementation</h3>
+          <p class="service-desc">Leveraging the latest AI technologies to reduce costs and improve lead quality in record time.</p>
+        </div>
+        <div class="service-card reveal delay-2">
+          <div class="service-icon">📈</div>
+          <h3 class="service-name">Lead Generation</h3>
+          <p class="service-desc">Specialized systems for real estate and high-ticket sales to fill your pipeline with quality leads.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA SECTION -->
+  <section class="cta">
+    <div class="container">
+      <div class="cta-content reveal">
+        <h2 class="cta-title">Ready to <em>Scale</em> Your Business?</h2>
+        <p class="cta-sub">Stop guessing and start growing with data-driven marketing strategies that actually work.</p>
+        <a href="https://calendar.app.google/mPDTCMvqw9cnvbiP6" class="btn btn-primary" style="background: #e8a84a; color: #1a1a1a;">Get Your Free Audit</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <span class="footer-logo">Zero Media</span>
+      <div class="footer-links">
+        <a href="#">Instagram</a>
+        <a href="#">LinkedIn</a>
+        <a href="#">Twitter</a>
+      </div>
+      <p class="copyright">&copy; 2024 Zero Media. All Rights Reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Reveal animations on scroll
+    const observerOptions = {
+      threshold: 0.1
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // Show nav CTA on scroll
+    window.addEventListener('scroll', () => {
+      const navCta = document.getElementById('nav-cta');
+      if (window.scrollY > 500) {
+        navCta.style.display = 'block';
+      } else {
+        navCta.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
