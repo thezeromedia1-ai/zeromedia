@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zero Media</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,800;0,900;1,400;1,700;1,800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: "DM Sans", sans-serif;
+    background: #ede8e0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+  }
+
+  .phone-wrapper {
+    width: 100%;
+    max-width: 430px;
+    background: #faf6f0;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ─── SCROLL ANIMATION BASE ─── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(36px);
+    transition: opacity 0.72s cubic-bezier(.22,.68,0,1.2), transform 0.72s cubic-bezier(.22,.68,0,1.2);
+  }
+  .reveal.delay-1 { transition-delay: 0.10s; }
+  .reveal.delay-2 { transition-delay: 0.20s; }
+  .reveal.delay-3 { transition-delay: 0.32s; }
+  .reveal.delay-4 { transition-delay: 0.44s; }
+  .reveal.delay-5 { transition-delay: 0.56s; }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .reveal-left {
+    opacity: 0;
+    transform: translateX(-40px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal-left.visible { opacity: 1; transform: translateX(0); }
+
+  .reveal-scale {
+    opacity: 0;
+    transform: scale(0.88);
+    transition: opacity 0.65s ease, transform 0.65s cubic-bezier(.34,1.56,.64,1);
+  }
+  .reveal-scale.visible { opacity: 1; transform: scale(1); }
+
+  /* ─── NAV (glassmorphism) ─── */
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 22px 24px 14px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(250,246,240,0.55);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    border-bottom: 1px solid rgba(255,255,255,0.4);
+    box-shadow: 0 1px 20px rgba(0,0,0,0.03);
+  }
+
+  .logo {
+    font-family: "DM Sans", sans-serif;
+    font-weight: 500;
+    font-size: 15px;
+    letter-spacing: 0.16em;
+    color: #1a1a1a;
+    text-transform: uppercase;
+  }
+
+  .hamburger {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    cursor: pointer;
+    padding: 4px;
+  }
+  .hamburger span {
+    display: block;
+    width: 24px;
+    height: 1.5px;
+    background: #1a1a1a;
+    border-radius: 2px;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+  .hamburger:hover span:nth-child(1) { transform: translateY(2px); }
+  .hamburger:hover span:nth-child(2) { transform: translateY(-2px); }
+  .hamburger.open span:nth-child(1) { transform: translateY(7.5px) rotate(45deg); }
+  .hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+  .hamburger.open span:nth-child(3) { transform: translateY(-7.5px) rotate(-45deg); }
+
+  /* ─── MENU DRAWER ─── */
+  .menu-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease;
+  }
+  .menu-overlay.open { opacity: 1; pointer-events: all; }
+
+  .menu-drawer {
+    position: fixed;
+    top: 0; right: 0;
+    width: 78%;
+    max-width: 300px;
+    height: 100%;
+    background: #1a1a1a; /* Dark background */
+    z-index: 300;
+    transform: translateX(100%);
+    transition: transform 0.38s cubic-bezier(.22,.68,0,1.1);
+    display: flex;
+    flex-direction: column;
+    padding: 0 0 40px;
+    box-shadow: -20px 0 60px rgba(0,0,0,0.4);
+  }
+  .menu-drawer.open { transform: translateX(0); }
+
+  .menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 24px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .menu-logo {
+    font-family: "Playfair Display", serif; /* Changed font */
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 0.05em;
+    color: #fff; /* Changed color */
+    text-transform: uppercase;
+  }
+  .menu-close {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: #fff; /* Changed color */
+    font-size: 24px;
+    line-height: 1;
+    border-radius: 50%;
+    transition: background 0.2s;
+  }
+  .menu-close:hover { background: rgba(255,255,255,0.1); }
+
+  .menu-nav {
+    flex: 1;
+    padding: 32px 0 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .menu-nav a {
+    font-family: "DM Sans", sans-serif; /* Changed font */
+    font-weight: 700;
+    font-size: 18px; /* Changed size */
+    color: rgba(255,255,255,0.9); /* Changed color */
+    text-decoration: none;
+    padding: 16px 28px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase; /* Modern look */
+    line-height: 1.1;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: color 0.2s, padding-left 0.25s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .menu-nav a:hover { color: #e8a84a; padding-left: 36px; }
+  .menu-nav a .nav-num {
+    font-family: "DM Sans", sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: #e8a84a; /* Accent color */
+    align-self: flex-start;
+    margin-top: 4px;
+    min-width: 22px;
+  }
+
+  .menu-cta {
+    margin: 28px 24px 0;
+    padding: 17px 0;
+    background: #e8a84a; /* Gold background */
+    border-radius: 50px;
+    text-align: center;
+    font-family: "DM Sans", sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    color: #1a1a1a; /* Dark text */
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: background 0.2s, transform 0.2s;
+    box-shadow: 0 4px 20px rgba(232,168,74,0.25);
+  }
+  .menu-cta:hover { background: #e8a84a; color: #1a1a1a; transform: translateY(-1px); }
+
+  .menu-social {
+    padding: 20px 28px 0;
+    display: flex;
+    gap: 14px;
+  }
+  .menu-social a {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: #999;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .menu-social a:hover { color: #1a1a1a; }
+
+  /* ─── HERO CTA BUTTON ─── */
+  .hero-cta-wrap {
+    position: absolute;
+    bottom: 28px;
+    left: 0; right: 0;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    padding: 0 24px;
+  }
+  .hero-audit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 32px;
+    background: #1a1a1a;
+    border-radius: 50px;
+    font-family: "DM Sans", sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #faf6f0;
+    text-decoration: none;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+    transition: background 0.22s, transform 0.22s, box-shadow 0.22s;
+    white-space: nowrap;
+  }
+  .hero-audit-btn:hover {
+    background: #e8a84a;
+    color: #1a1a1a;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 36px rgba(232,168,74,0.38);
+  }
+  .hero-audit-btn:active { transform: translateY(0); }
+  .hero-audit-btn .btn-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+    font-size: 11px;
+    flex-shrink: 0;
+    transition: transform 0.2s;
+  }
+  .hero-audit-btn:hover .btn-arrow { transform: translateX(3px); }
+
+  /* ─── HERO with animated glassmorphism background ─── */
+  .hero {
+    position: relative;
+    min-height: 720px;
+    overflow: hidden;
+    background: #faf6f0;
+  }
+
+  .hero-img {
+    position: absolute;
+    top: 0; right: 0;
+    width: 80%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    z-index: 1;
+    border-radius: 0 0 0 40px;
+  }
+
+  .hero-img-fade {
+    position: absolute;
+    top: 0; left: 0;
+    width: 68%;
+    height: 100%;
+    background: linear-gradient(to right,
+      rgba(250,246,240,0.92) 0%,
+      rgba(250,246,240,0.75) 40%,
+      rgba(250,246,240,0.2) 75%,
+      rgba(250,246,240,0) 100%
+    );
+    z-index: 2;
+  }
+
+  .hero-img-fade-bottom {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 180px;
+    background: linear-gradient(to top, rgba(250,246,240,0.85), rgba(250,246,240,0));
+    z-index: 3;
+  }
+
+  .hero-img-fade-top {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 60px;
+    background: linear-gradient(to bottom, rgba(250,246,240,0.9), rgba(250,246,240,0));
+    z-index: 3;
+  }
+
+  .hero-text {
+    position: relative;
+    z-index: 5;
+    padding: 24px 24px 140px;
+  }
+
+  /* Headline – Playfair Display, matching the reference image */
+  .headline .line1,
+  .headline .line2 {
+    font-family: "Playfair Display", serif;
+    font-weight: 700;
+    font-size: clamp(36px, 9.5vw, 50px);
+    line-height: 1.0;
+    color: #111;
+    display: block;
+    letter-spacing: -0.02em;
+  }
+  .headline .line3 {
+    font-family: "Playfair Display", serif;
+    font-weight: 400;
+    font-style: italic;
+    font-size: clamp(38px, 10vw, 52px);
+    line-height: 1.05;
+    color: #111;
+    display: block;
+    margin-top: 4px;
+    letter-spacing: -0.015em;
+  }
+
+  .brand-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 28px;
+    text-decoration: none;
+    color: #1a1a1a;
+  }
+  .play-icon {
+    width: 24px; height: 24px;
+    border: 1.8px solid #1a1a1a;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.2s;
+  }
+  .play-icon::after {
+    content: "";
+    width: 0; height: 0;
+    border-style: solid;
+    border-width: 4px 0 4px 7px;
+    border-color: transparent transparent transparent #1a1a1a;
+    margin-left: 2px;
+    transition: border-color 0.2s;
+  }
+  .brand-link:hover .play-icon { background: #1a1a1a; }
+  .brand-link:hover .play-icon::after { border-color: transparent transparent transparent #faf6f0; }
+
+  .brand-link-text {
+    font-family: "DM Sans", sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    letter-spacing: 0.005em;
+    color: #1a1a1a;
+  }
+
+  .body-text {
+    margin-top: 12px;
+    font-size: 15px;
+    line-height: 1.55;
+    color: #1a1a1a;
+    max-width: 230px;
+    font-weight: 400;
+  }
+
+  /* ─── Glassmorphism Stat Badge ─── */
+  .stat-badge {
+    position: absolute;
+    bottom: 110px; right: 18px;
+    z-index: 10;
+    width: 130px; height: 130px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.15) 100%);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255,255,255,0.6);
+    border-radius: 50%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    box-shadow:
+      0 8px 32px rgba(0,0,0,0.12),
+      inset 0 1px 1px rgba(255,255,255,0.6),
+      inset 0 -1px 2px rgba(0,0,0,0.05);
+    animation: float 3.4s ease-in-out infinite;
+  }
+  .stat-badge::before {
+    content: "";
+    position: absolute;
+    top: 8%; left: 12%;
+    width: 40%; height: 22%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0));
+    border-radius: 50%;
+    filter: blur(2px);
+    pointer-events: none;
+  }
+  @keyframes float {
+    0%,100% { transform: translateY(0); }
+    50%      { transform: translateY(-10px); }
+  }
+  .stat-number {
+    font-family: "Playfair Display", serif;
+    font-weight: 700;
+    font-style: italic;
+    font-size: 32px;
+    color: #1a1a1a;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .stat-label {
+    font-family: "DM Sans", sans-serif;
+    font-weight: 500;
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+    color: #1a1a1a;
+    text-transform: uppercase;
+    line-height: 1.45;
+    margin-top: 5px;
+  }
+
+  /* ─── SERVICES STRIP ─── */
+  .services {
+    padding: 48px 24px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .section-tag {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 10px;
+  }
+  .services-title {
+    font-family: "Playfair Display", serif;
+    font-size: clamp(28px, 7.5vw, 36px);
+    font-weight: 700;
+    color: #111;
+    line-height: 1.2;
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+  }
+  .services-title em { font-style: italic; font-weight: 400; }
+
+  .service-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 18px 18px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.04);
+  }
+  .service-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .service-icon.orange { background: #fff4e0; color: #e8a84a; }
+  .service-icon.blue   { background: #e8f0ff; color: #4a7ae8; }
+  .service-icon.green  { background: #e6f9ed; color: #3aad6a; }
+  .service-icon.purple { background: #f3e8ff; color: #9333ea; }
+
+  .service-name {
+    font-weight: 600;
+    font-size: 15px;
+    color: #111;
+    margin-bottom: 4px;
+  }
+  .service-desc {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+  }
+
+  /* ─── STATS ROW ─── */
+  .stats-row {
+    padding: 44px 24px 40px;
+    background: linear-gradient(135deg, #fdf8f0 0%, #faf5ea 100%);
+  }
+  .stats-title {
+    font-family: "Playfair Display", serif;
+    font-size: clamp(28px, 7.5vw, 36px);
+    font-weight: 700;
+    color: #111;
+    line-height: 1.2;
+    margin-bottom: 24px;
+    letter-spacing: -0.01em;
+  }
+  .stats-title em { font-style: italic; font-weight: 400; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .stat-card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 20px 18px;
+    box-shadow: 0 2px 18px rgba(0,0,0,0.06);
+    border: 1px solid rgba(0,0,0,0.04);
+  }
+  .big-num {
+    font-family: "Playfair Display", serif;
+    font-weight: 700;
+    font-size: 38px;
+    color: #111;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  .big-num span:last-child {
+    font-size: 24px;
+    font-weight: 400;
+    color: #e8a84a;
+  }
+  .stat-desc {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.45;
+  }
+
+  /* ─── CTA ─── */
+  .cta-section {
+    padding: 52px 24px 52px;
+    background: linear-gradient(145deg, #1a1a1a 0%, #2a2218 100%);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-section::before {
+    content: "";
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 220px; height: 220px;
+    background: radial-gradient(circle, rgba(232,168,74,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .cta-section::after {
+    content: "";
+    position: absolute;
+    bottom: -40px; left: -40px;
+    width: 180px; height: 180px;
+    background: radial-gradient(circle, rgba(232,168,74,0.10) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .cta-tag {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #e8a84a;
+    margin-bottom: 14px;
+  }
+
+  .cta-title {
+    font-family: "Playfair Display", serif;
+    font-size: clamp(32px, 8.5vw, 42px);
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.15;
+    margin-bottom: 14px;
+    position: relative;
+    z-index: 1;
+    letter-spacing: -0.01em;
+  }
+  .cta-title em {
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  .cta-sub {
+    font-size: 14px;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.6;
+    margin-bottom: 32px;
+    max-width: 280px;
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .cta-btn-primary {
+    display: block;
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto 14px;
+    padding: 17px 0;
+    background: #e8a84a;
+    border: none;
+    border-radius: 50px;
+    font-family: "DM Sans", sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    color: #1a1a1a;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+    box-shadow: 0 6px 24px rgba(232,168,74,0.35);
+    position: relative;
+    z-index: 1;
+    text-decoration: none;
+  }
+  .cta-btn-primary:hover {
+    background: #f0b85a;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(232,168,74,0.45);
+  }
+  .cta-btn-primary:active { transform: translateY(0); }
+
+  .cta-btn-secondary {
+    display: block;
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+    padding: 16px 0;
+    background: transparent;
+    border: 1.5px solid rgba(255,255,255,0.25);
+    border-radius: 50px;
+    font-family: "DM Sans", sans-serif;
+    font-weight: 500;
+    font-size: 15px;
+    color: rgba(255,255,255,0.8);
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: border-color 0.2s, color 0.2s, transform 0.2s;
+    position: relative;
+    z-index: 1;
+    text-decoration: none;
+  }
+  .cta-btn-secondary:hover {
+    border-color: rgba(255,255,255,0.6);
+    color: #fff;
+    transform: translateY(-1px);
+  }
+
+  /* ─── FOOTER ─── */
+  .footer {
+    background: #1a1a1a;
+    padding: 28px 24px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .footer-logo-wrap svg { display: block; }
+  .footer-copy {
+    font-family: "DM Sans", sans-serif;
+    font-weight: 400;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: rgba(255,255,255,0.3);
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .counting { display: inline; }
+
+  @media (max-width: 430px) { .phone-wrapper { max-width: 100%; } }
+</style>
+</head>
+<body>
+<div class="phone-wrapper">
+
+  <!-- NAV -->
+  <nav>
+    <div class="logo">Zero Media</div>
+    <div class="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </div>
+  </nav>
+
+  <!-- MENU DRAWER -->
+  <div class="menu-overlay"></div>
+  <div class="menu-drawer">
+    <div class="menu-header">
+      <div class="menu-logo">Zero Media</div>
+      <div class="menu-close">&times;</div>
+    </div>
+    <nav class="menu-nav">
+      <a href="#"><span class="nav-num">01</span>Services</a>
+      <a href="#"><span class="nav-num">02</span>Case Studies</a>
+      <a href="#"><span class="nav-num">03</span>Process</a>
+      <a href="#"><span class="nav-num">04</span>About Us</a>
+      <a href="https://calendar.app.google/mPDTCMvqw9cnvbiP6" class="menu-cta" target="_blank">Get an Audit</a>
+    </nav>
+    <div class="menu-social">
+      <a href="#">Instagram</a>
+      <a href="#">LinkedIn</a>
+      <a href="#">Twitter</a>
+    </div>
+  </div>
+
+  <!-- ── HERO ── -->
+  <div class="hero">
+
+    <img class="hero-img" src="https://i.ibb.co/FkRhRYWN/1000297312.jpg" alt="Zero Media Hero" />
+    <div class="hero-img-fade"></div>
+    <div class="hero-img-fade-top"></div>
+    <div class="hero-img-fade-bottom"></div>
+
+    <div class="hero-text">
+      <h1 class="headline">
+        <span class="line1 reveal">Wasting Budget</span>
+        <span class="line2 reveal delay-1">on Unqualified</span>
+        <span class="line3 reveal delay-2">Leads.</span>
+      </h1>
+
+      <a href="#" class="brand-link reveal delay-3">
+        <span class="play-icon"></span>
+        <span class="brand-link-text">How do we fix this?</span>
+      </a>
+
+      <p class="body-text reveal delay-4">
+        Accelerate your growth using our AI-optimized Meta and Google Ads. Supported and tested by experts for maximum results.
+      </p>
+    </div>
+
+    <!-- Glassmorphism floating badge -->
+    <div class="stat-badge reveal-scale">
+      <div class="stat-number"><span class="counting" data-target="1307">0</span>+</div>
+        <div class="stat-label">Listing<br>Appointments set</div>
+    </div>
+
+    <!-- Hero CTA Button -->
+    <div class="hero-cta-wrap reveal delay-5">
+      <a href="https://calendar.app.google/mPDTCMvqw9cnvbiP6" class="hero-audit-btn" target="_blank">
+        Get Your Free Audit
+        <span class="btn-arrow">→</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- ── SERVICES ── -->
+  <section class="services">
+    <div>
+      <div class="section-tag reveal">What we do</div>
+      <h2 class="services-title reveal delay-1">Smart marketing, <em>real results.</em></h2>
+    </div>
+    <div class="service-card reveal delay-2">
+      <div class="service-icon green">▲</div>
+      <div>
+        <div class="service-name">Performance Ads</div>
+        <div class="service-desc">Data-driven campaigns that scale with measurable ROI.</div>
+      </div>
+    </div>
+    <div class="service-card reveal delay-3">
+      <div class="service-icon orange">✦</div>
+      <div>
+        <div class="service-name">Brand Strategy</div>
+        <div class="service-desc">Position your brand to stand out and convert with clarity.</div>
+      </div>
+    </div>
+    <div class="service-card reveal delay-4">
+      <div class="service-icon blue">◈</div>
+      <div>
+        <div class="service-name">Video Creation</div>
+        <div class="service-desc">Create High-Retention Short-Form Content.</div>
+      </div>
+    </div>
+    <div class="service-card reveal delay-5">
+      <div class="service-icon purple">✦</div>
+      <div>
+        <div class="service-name">Personal Branding</div>
+        <div class="service-desc">Position yourself as the undisputed authority in your niche.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats-row">
+    <div class="section-tag reveal">By the numbers</div>
+    <h2 class="stats-title reveal delay-1">Results that <em>speak for themselves.</em></h2>
+    <div class="stats-grid">
+      <div class="stat-card reveal delay-2">
+        <div class="big-num"><span class="counting" data-target="320">0</span><span>%</span></div>
+        <div class="stat-desc">Average ROAS increase in 90 days</div>
+      </div>
+      <div class="stat-card reveal delay-3">
+        <div class="big-num"><span class="counting" data-target="50">0</span><span>+</span></div>
+        <div class="stat-desc">Brands scaled profitably</div>
+      </div>
+      <div class="stat-card reveal delay-4">
+        <div class="big-num"><span class="counting" data-target="2">0</span><span>M+</span></div>
+        <div class="stat-desc">Ad spend managed globally</div>
+      </div>
+      <div class="stat-card reveal delay-5">
+        <div class="big-num"><span class="counting" data-target="98">0</span><span>%</span></div>
+        <div class="stat-desc">Client retention rate</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="cta-tag reveal">Start Today</div>
+    <h2 class="cta-title reveal delay-1">Ready to scale <em>your brand?</em></h2>
+    <p class="cta-sub reveal delay-2">Join 50+ successful companies who trust Zero Media with their growth.</p>
+    <a href="https://calendar.app.google/mPDTCMvqw9cnvbiP6" class="cta-btn-primary reveal delay-3" target="_blank">Claim Your Free Audit</a>
+    <a href="#" class="cta-btn-secondary reveal delay-4">View Case Studies</a>
+  </section>
+
+  <!-- BOTTOM IMAGE (Requested Image) -->
+  <div class="reveal-scale" style="padding: 24px;">
+      <img src="https://i.ibb.co/ynb36tVH/IMG-20260324-115808-048.webp" alt="Zero Media Showcase" style="width: 100%; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); display: block;">
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="logo" style="color: #fff; font-size: 13px;">Zero Media</div>
+    <div class="footer-copy">© 2024 Zero Media. All Rights Reserved.</div>
+  </footer>
+
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Reveal on scroll
+    const observerOptions = { threshold: 0.12 };
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          
+          // If it has counting elements inside, start them
+          const counters = entry.target.querySelectorAll('.counting');
+          counters.forEach(counter => {
+            if (!counter.dataset.started) {
+              startCounting(counter);
+            }
+          });
+          
+          // Direct counting element
+          if (entry.target.classList.contains('counting') && !entry.target.dataset.started) {
+            startCounting(entry.target);
+          }
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.reveal, .reveal-left, .reveal-scale').forEach(el => {
+      observer.observe(el);
+    });
+
+    // Counting function
+    function startCounting(el) {
+      el.dataset.started = "true";
+      const target = parseInt(el.dataset.target);
+      const duration = 2000;
+      const start = 0;
+      let startTime = null;
+
+      function step(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const progress = Math.min((timestamp - startTime) / duration, 1);
+        const current = Math.floor(progress * (target - start) + start);
+        el.innerText = current;
+        if (progress < 1) {
+          window.requestAnimationFrame(step);
+        } else {
+          el.innerText = target;
+        }
+      }
+      window.requestAnimationFrame(step);
+    }
+
+    // Menu logic
+    const hamburger = document.querySelector('.hamburger');
+    const menuDrawer = document.querySelector('.menu-drawer');
+    const menuOverlay = document.querySelector('.menu-overlay');
+    const menuClose = document.querySelector('.menu-close');
+
+    function toggleMenu() {
+      hamburger.classList.toggle('open');
+      menuDrawer.classList.toggle('open');
+      menuOverlay.classList.toggle('open');
+      document.body.style.overflow = menuDrawer.classList.contains('open') ? 'hidden' : '';
+    }
+
+    hamburger.addEventListener('click', toggleMenu);
+    if (menuClose) menuClose.addEventListener('click', toggleMenu);
+    if (menuOverlay) menuOverlay.addEventListener('click', toggleMenu);
+  });
+</script>
+</body>
+  </html>
+  
